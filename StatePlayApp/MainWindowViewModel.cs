@@ -3,9 +3,9 @@ using GalaSoft.MvvmLight.Command;
 
 namespace StatePlayApp
 {
-    public class MainWindowViewModel : ViewModelBase
+    public partial class MainWindowViewModel : ViewModelBase
     {
-        public enum ActionEnum { None, WakeUp, Walk, Snore, Sleep }
+        public enum ActionEnum { None, WakeUp, Walk, Snore, Sleep, NotValid }
 
         private ActionEnum lastAction;
         public ActionEnum LastAction
@@ -18,22 +18,31 @@ namespace StatePlayApp
             }
         }
 
-        
-
-
         private string _lastActionDisplayName;
         public string LastActionDisplayName { get => _lastActionDisplayName; set { Set(() => LastActionDisplayName, ref _lastActionDisplayName, value); } }
 
-        private AbstractState _currentState =new AwakeState();
-
-        private string _currentStateDisplayName;
-
-        public string CurrentStateDisplayName
-        {
-            get { return _currentStateDisplayName; }
-            set { _currentStateDisplayName = value; }
+        private AbstractState _currentState; 
+        private AbstractState CurrentState { 
+            get => _currentState; 
+            set { 
+                Set(() => CurrentState, ref _currentState, value);
+                CurrentStateDisplayName = CurrentState.DisplayName;
+            }
         }
 
+        private string _currentStateDisplayName; 
+        public string CurrentStateDisplayName { get => _currentStateDisplayName; set { Set(() => CurrentStateDisplayName, ref _currentStateDisplayName, value); }}
+
+        private RelayCommand _wakeUpCmd;
+        public RelayCommand WakeUpCmd => _wakeUpCmd ?? (_wakeUpCmd = new RelayCommand(
+            () => wakeUp(),
+            () => true,
+			keepTargetAlive:true
+            ));
+		private void wakeUp()
+        {
+            _currentState.WakeUp();
+        }
 
         private RelayCommand _walkCmd;
         public RelayCommand WalkCmd => _walkCmd ?? (_walkCmd = new RelayCommand(
@@ -43,6 +52,7 @@ namespace StatePlayApp
                 ));
         private void walk()
         {
+            _currentState.Walk();
         }
 
 
@@ -50,48 +60,35 @@ namespace StatePlayApp
         public RelayCommand SnoreCmd => _snoreCmd ?? (_snoreCmd = new RelayCommand(
             () => snore(),
             () => true,
+            keepTargetAlive: true
+            ));
+        private void snore()
+        {
+            _currentState.Snore();
+        }
+
+
+        private RelayCommand _sleepCmd;
+        public RelayCommand SleepCmd => _sleepCmd ?? (_sleepCmd = new RelayCommand(
+            () => sleep(),
+            () => true,
 			keepTargetAlive:true
             ));
-		private void snore()
+		private void sleep()
         {
+            _currentState.Sleep();
         }
+
 
         private void GoToState(AbstractState newState)
         {
-            _currentState = newState;
+            CurrentState = newState;
             newState.EnterState();
         }
         public MainWindowViewModel()
         {
             this.LastAction = ActionEnum.None;
+            this.CurrentState = new AwakeState(this);
         }
-        private abstract class AbstractState
-        {
-            public abstract void EnterState();
-            public abstract void WakeUp();
-            public abstract void Walk();
-            public abstract void Sleep();
-            public abstract void Snore();
-
-        }
-        private class AwakeState : AbstractState
-        {
-            public override void EnterState() { }
-            public override void WakeUp(){ }
-            public override void Walk() { }
-            public override void Sleep(){}
-            public override void Snore() { }
-        }
-
-        private class AsleepState : AbstractState
-        {
-            public override void EnterState() { }
-            public override void WakeUp() { }
-            public override void Walk() { }
-            public override void Sleep() { }
-            public override void Snore() { }
-        }
-
-
     }
 }

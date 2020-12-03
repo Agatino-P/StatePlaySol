@@ -79,6 +79,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MainWindowViewModel.AbstractState.cs" />
+    <Compile Include="MainWindowViewModel.AsleepState.cs" />
+    <Compile Include="MainWindowViewModel.AwakeState.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
